@@ -180,6 +180,9 @@ impl<'a> VapidSignatureBuilder<'a> {
         let found_sec1 = parsed.iter().any(|pem| pem.tag == "EC PRIVATE KEY");
 
         //Handle each kind of PEM file differently, as EC keys can be in SEC1 or PKCS8 format.
+
+        log::warn!("found_pkcs8: {}, found_sec1: {}", found_pkcs8, found_sec1);
+
         if found_sec1 {
             let key = sec1_decode::parse_pem(buffer.as_bytes()).map_err(|_| WebPushError::InvalidCryptoKeys)?;
             Ok(ES256KeyPair::from_bytes(&key.key).map_err(|e| {

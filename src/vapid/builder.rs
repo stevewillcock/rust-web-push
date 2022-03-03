@@ -163,6 +163,8 @@ impl<'a> VapidSignatureBuilder<'a> {
     }
 
     fn from_ec(ec_key: ES256KeyPair, subscription_info: &'a SubscriptionInfo) -> VapidSignatureBuilder<'a> {
+
+        log::info!("In from_ec");
         VapidSignatureBuilder {
             claims: jwt_simple::prelude::Claims::with_custom_claims(BTreeMap::new(), Duration::from_hours(12)),
             key: VapidKey::new(ec_key),

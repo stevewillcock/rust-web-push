@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::io::Read;
 
 use http::uri::Uri;
+use jwt_simple::Error;
 use jwt_simple::prelude::*;
 use serde_json::Value;
 
@@ -185,11 +186,24 @@ impl<'a> VapidSignatureBuilder<'a> {
 
         if found_sec1 {
             let key = sec1_decode::parse_pem(buffer.as_bytes()).map_err(|_| WebPushError::InvalidCryptoKeys)?;
-            Ok(ES256KeyPair::from_bytes(&key.key).map_err(|e| {
-                log::error!("Error when trying ES256KeyPair::from_bytes on {:?}", &key);
-                log::error!("Error was {:?}", e);
-                WebPushError::InvalidCryptoKeys
-            } )?)
+
+            match ES256KeyPair::from_bytes(&key.key) {
+                Ok(my_key) => {
+                    log::info!("Got key");
+                    Ok(my_key)
+                }
+                Err(e) => {
+                    log::error!("Error!!!!!!!!!!!!!!!!");
+                    log::error!("*** {:?}", e);
+                    Err(WebPushError::InvalidCryptoKeys)
+                }
+            }
+
+            // Ok(ES256KeyPair::from_bytes(&key.key).map_err(|e| {
+            //     log::error!("Error when trying ES256KeyPair::from_bytes on {:?}", &key);
+            //     log::error!("Error was {:?}", e);
+            //     WebPushError::InvalidCryptoKeys
+            // } )?)
         } else if found_pkcs8 {
             let key =
                 pkcs8::PrivateKeyDocument::from_pem(buffer.as_str()).map_err(|_| WebPushError::InvalidCryptoKeys)?;

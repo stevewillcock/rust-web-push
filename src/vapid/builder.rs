@@ -182,7 +182,11 @@ impl<'a> VapidSignatureBuilder<'a> {
         //Handle each kind of PEM file differently, as EC keys can be in SEC1 or PKCS8 format.
         if found_sec1 {
             let key = sec1_decode::parse_pem(buffer.as_bytes()).map_err(|_| WebPushError::InvalidCryptoKeys)?;
-            Ok(ES256KeyPair::from_bytes(&key.key).map_err(|_| WebPushError::InvalidCryptoKeys)?)
+            Ok(ES256KeyPair::from_bytes(&key.key).map_err(|e| {
+                log::error!("Error when trying ES256KeyPair::from_bytes on {:?}", &key);
+                log::error!("Error was {:?}", e);
+                WebPushError::InvalidCryptoKeys
+            } )?)
         } else if found_pkcs8 {
             let key =
                 pkcs8::PrivateKeyDocument::from_pem(buffer.as_str()).map_err(|_| WebPushError::InvalidCryptoKeys)?;

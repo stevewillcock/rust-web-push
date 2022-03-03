@@ -70,7 +70,11 @@ impl<'a> HttpEce<'a> {
                         crypto_headers: headers,
                         content_encoding: "aes128gcm",
                     }),
-                    _ => Err(WebPushError::InvalidCryptoKeys),
+                    Err(e) => {
+                        log::error!("Error with http_ece::encrypt call: {:?}", e);
+
+                        Err(WebPushError::InvalidCryptoKeys)
+                    },
                 }
             }
         }
